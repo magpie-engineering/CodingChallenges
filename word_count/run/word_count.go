@@ -83,10 +83,10 @@ func (app *AppEnv) runCounts() (countResults, error) {
 
 func getCount(filename string, split_fun bufio.SplitFunc) (int, error) {
 	data, err := os.Open(filename)
-	defer data.Close()
 	if err != nil {
 		return 0, err
 	}
+	defer data.Close()
 	scanner := bufio.NewScanner(data)
 	scanner.Split(split_fun)
 	count := 0
