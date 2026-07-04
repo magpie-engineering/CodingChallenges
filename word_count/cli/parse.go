@@ -37,6 +37,12 @@ func fromArgs(app *run.AppEnv, args []string) error {
 	if app.Filename == "" {
 		return nil
 	}
+	if !(app.ByteCount && app.LineCount && app.WordCount && app.CharCount) {
+		// no flag specified so default flags
+		app.ByteCount = true
+		app.LineCount = true
+		app.WordCount = true
+	}
 
 	return nil
 }
