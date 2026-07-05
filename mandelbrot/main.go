@@ -6,7 +6,6 @@ import (
 	"github.com/magpie-engineering/CodingChallenges/mandelbrot/mandelbrot"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/lucasb-eyer/go-colorful"
 )
 
@@ -35,18 +34,25 @@ func NewGame(w, h, maxIter int) *Game {
 
 func (g *Game) Update() error {
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
-		g.centreX -= 0.25 / g.zoom
+	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
+		g.centreX -= 0.05 / g.zoom
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) {
-		g.centreX += 0.25 / g.zoom
+	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
+		g.centreX += 0.05 / g.zoom
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
-		g.centreI -= 0.25 / g.zoom
+	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
+		g.centreI -= 0.05 / g.zoom
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
-		g.centreI += 0.25 / g.zoom
+	if ebiten.IsKeyPressed(ebiten.KeyArrowDown) {
+		g.centreI += 0.05 / g.zoom
 	}
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		g.zoom *= 1.05
+	}
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+		g.zoom *= 0.95
+	}
+
 	if _, wheelY := ebiten.Wheel(); wheelY != 0 {
 		if wheelY > 0 {
 			g.zoom *= 1.1
