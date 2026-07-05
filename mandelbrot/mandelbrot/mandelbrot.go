@@ -9,7 +9,6 @@ import (
 
 func CalcMandelbrot(screen []byte, screenHeight int, screenWidth int, minX float64, maxX float64, minI float64, maxI float64, colourScale []colorful.Color) {
 	n_goroutines := runtime.NumCPU()
-	rows_per_routine := screenHeight / n_goroutines
 	iRange := maxI - minI
 	xRange := maxX - minX
 	maxIter := len(colourScale) - 1
@@ -21,7 +20,7 @@ func CalcMandelbrot(screen []byte, screenHeight int, screenWidth int, minX float
 
 	for routine := range n_goroutines {
 		wg.Go(func() {
-			for screenI := rows_per_routine * routine; screenI < rows_per_routine*(routine+1) && screenI < screenHeight; screenI++ {
+			for screenI := routine; screenI < screenHeight; screenI += n_goroutines {
 				i := float64(screenI)*hInv + minI
 				for screenX := 0; screenX < screenWidth; screenX++ {
 					x := float64(screenX)*wInv + minX
