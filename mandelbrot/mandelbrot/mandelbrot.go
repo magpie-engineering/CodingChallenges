@@ -1,9 +1,5 @@
 package mandelbrot
 
-import (
-	"math"
-)
-
 func CalcMandelbrot(screen []byte, screenHeight int, screenWidth int, minX float64, maxX float64, minI float64, maxI float64, maxIter byte) {
 	iRange := maxI - minI
 	xRange := maxX - minX
@@ -27,17 +23,20 @@ func CalcMandelbrot(screen []byte, screenHeight int, screenWidth int, minX float
 }
 
 func mandelbrotCount(x float64, i float64, maxIter uint8) byte {
-	var z complex128
+	var zx, zi, tmpzx float64
 	var iterCount byte
 	if x == 0 && i == 0 {
 		// will never escape
 		return maxIter
 	}
-	c := complex(x, i)
 
-	z = z*z + c
-	for ; (math.Pow(real(z), 2)+math.Pow(imag(z), 2)) <= 4 && iterCount < maxIter; iterCount++ {
-		z = z*z + c
+	tmpzx = zx
+	zx = zx*zx - zi*zi + x
+	zi = 2*tmpzx*zi + i
+	for ; (zx*zx+zi*zi) <= 4 && iterCount < maxIter; iterCount++ {
+		tmpzx = zx
+		zx = zx*zx - zi*zi + x
+		zi = 2*tmpzx*zi + i
 	}
 	return iterCount
 
