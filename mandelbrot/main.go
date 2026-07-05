@@ -38,6 +38,9 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyF) {
 		ebiten.SetFullscreen(!ebiten.IsFullscreen())
 	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		ebiten.SetFullscreen(false)
+	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
 		g.centreX -= 0.05 / g.zoom
