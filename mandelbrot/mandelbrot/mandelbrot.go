@@ -2,6 +2,7 @@ package mandelbrot
 
 import (
 	"runtime"
+	"sync"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
@@ -10,20 +11,17 @@ func CalcMandelbrot(screen []byte, screenHeight int, screenWidth int, minX float
 	n_goroutines := runtime.NumCPU()
 	rows_per_routine := screenHeight / n_goroutines
 
-	channels := make([]chan int, n_goroutines)
+	var wg sync.WaitGroup
 
 	for routine := range n_goroutines {
-		channels[routine] = make(chan int)
-		go processRows(channels[routine], rows_per_routine*routine, rows_per_routine*(routine+1), screen, screenHeight, screenWidth, minX, maxX, minI, maxI, colourScale)
+		wg.Go(func() {
+			processRows(rows_per_routine*routine, rows_per_routine*(routine+1), screen, screenHeight, screenWidth, minX, maxX, minI, maxI, colourScale)
+		})
 	}
-
-	for _, ch := range channels {
-		<-ch
-	}
-
+	wg.Wait()
 }
 
-func processRows(c chan int, startRow int, endRow int, screen []byte, screenHeight int, screenWidth int, minX float64, maxX float64, minI float64, maxI float64, colourScale []colorful.Color) {
+func processRows(startRow int, endRow int, screen []byte, screenHeight int, screenWidth int, minX float64, maxX float64, minI float64, maxI float64, colourScale []colorful.Color) {
 	iRange := maxI - minI
 	xRange := maxX - minX
 	maxIter := len(colourScale) - 1
@@ -44,8 +42,6 @@ func processRows(c chan int, startRow int, endRow int, screen []byte, screenHeig
 
 		}
 	}
-	close(c)
-
 }
 
 func mandelbrotCount(x float64, i float64, maxIter int) int {
