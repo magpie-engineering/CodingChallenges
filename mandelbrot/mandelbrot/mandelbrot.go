@@ -10,38 +10,36 @@ import (
 func CalcMandelbrot(screen []byte, screenHeight int, screenWidth int, minX float64, maxX float64, minI float64, maxI float64, colourScale []colorful.Color) {
 	n_goroutines := runtime.NumCPU()
 	rows_per_routine := screenHeight / n_goroutines
+	iRange := maxI - minI
+	xRange := maxX - minX
+	maxIter := len(colourScale) - 1
+
+	hInv := iRange / float64(screenHeight)
+	wInv := xRange / float64(screenWidth)
 
 	var wg sync.WaitGroup
 
 	for routine := range n_goroutines {
 		wg.Go(func() {
-			processRows(rows_per_routine*routine, rows_per_routine*(routine+1), screen, screenHeight, screenWidth, minX, maxX, minI, maxI, colourScale)
+			for screenI := rows_per_routine * routine; screenI < rows_per_routine*(routine+1) && screenI < screenHeight; screenI++ {
+				i := float64(screenI)*hInv + minI
+				for screenX := 0; screenX < screenWidth; screenX++ {
+					x := float64(screenX)*wInv + minX
+					iterCount := mandelbrotCount(x, i, maxIter)
+
+					idx := (screenI*screenWidth + screenX) * 4
+					pixelColour := colourScale[iterCount]
+
+					screen[idx+0] = byte(pixelColour.R * 255) // R
+					screen[idx+1] = byte(pixelColour.G * 255) // G
+					screen[idx+2] = byte(pixelColour.B * 255) // B
+					screen[idx+3] = 255                       // A
+
+				}
+			}
 		})
 	}
 	wg.Wait()
-}
-
-func processRows(startRow int, endRow int, screen []byte, screenHeight int, screenWidth int, minX float64, maxX float64, minI float64, maxI float64, colourScale []colorful.Color) {
-	iRange := maxI - minI
-	xRange := maxX - minX
-	maxIter := len(colourScale) - 1
-
-	for screenI := startRow; screenI < endRow && screenI < screenHeight; screenI++ {
-		i := (float64(screenI)/float64(screenHeight))*iRange + minI
-		for screenX := 0; screenX < screenWidth; screenX++ {
-			x := (float64(screenX)/float64(screenWidth))*xRange + minX
-			iterCount := mandelbrotCount(x, i, maxIter)
-
-			idx := (screenI*screenWidth + screenX) * 4
-			pixelColour := colourScale[iterCount]
-
-			screen[idx+0] = byte(pixelColour.R * 255) // R
-			screen[idx+1] = byte(pixelColour.G * 255) // G
-			screen[idx+2] = byte(pixelColour.B * 255) // B
-			screen[idx+3] = 255                       // A
-
-		}
-	}
 }
 
 func mandelbrotCount(x float64, i float64, maxIter int) int {
