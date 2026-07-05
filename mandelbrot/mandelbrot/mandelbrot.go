@@ -1,8 +1,14 @@
 package mandelbrot
 
-func CalcMandelbrot(screen []byte, screenHeight int, screenWidth int, minX float64, maxX float64, minI float64, maxI float64, maxIter byte) {
+import (
+	"github.com/lucasb-eyer/go-colorful"
+)
+
+func CalcMandelbrot(screen []byte, screenHeight int, screenWidth int, minX float64, maxX float64, minI float64, maxI float64, colourScale []colorful.Color) {
 	iRange := maxI - minI
 	xRange := maxX - minX
+
+	maxIter := len(colourScale) - 1
 
 	for screenI := 0; screenI < screenHeight; screenI++ {
 		i := (float64(screenI)/float64(screenHeight))*iRange + minI
@@ -11,20 +17,21 @@ func CalcMandelbrot(screen []byte, screenHeight int, screenWidth int, minX float
 			iterCount := mandelbrotCount(x, i, maxIter)
 
 			idx := (screenI*screenWidth + screenX) * 4
+			pixelColour := colourScale[iterCount]
 
-			screen[idx+0] = 255 - iterCount // R
-			screen[idx+1] = 255 - iterCount // G
-			screen[idx+2] = 255 - iterCount // B
-			screen[idx+3] = 255             // A
+			screen[idx+0] = byte(pixelColour.R * 255) // R
+			screen[idx+1] = byte(pixelColour.G * 255) // G
+			screen[idx+2] = byte(pixelColour.B * 255) // B
+			screen[idx+3] = 255                       // A
 
 		}
 	}
 
 }
 
-func mandelbrotCount(x float64, i float64, maxIter uint8) byte {
+func mandelbrotCount(x float64, i float64, maxIter int) int {
 	var zx, zi, tmpzx float64
-	var iterCount byte
+	var iterCount int
 	if x == 0 && i == 0 {
 		// will never escape
 		return maxIter
