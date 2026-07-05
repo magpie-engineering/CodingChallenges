@@ -51,9 +51,13 @@ func processRows(c chan int, startRow int, endRow int, screen []byte, screenHeig
 func mandelbrotCount(x float64, i float64, maxIter int) int {
 	var zx, zi, tmpzx float64
 	var iterCount int
-	if x == 0 && i == 0 {
-		// will never escape
-		return maxIter
+	i2 := i * i
+	q := (x-0.25)*(x-0.25) + i2
+	if q*(q+(x-0.25)) < 0.25*i2 {
+		return maxIter // In main cardioid
+	}
+	if (x+1.0)*(x+1.0)+i2 < 0.0625 {
+		return maxIter // In period-2 bulb
 	}
 
 	tmpzx = zx
