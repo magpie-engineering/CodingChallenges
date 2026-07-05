@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/magpie-engineering/CodingChallenges/mandelbrot/colourscale"
 	"github.com/magpie-engineering/CodingChallenges/mandelbrot/mandelbrot"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -29,7 +30,7 @@ func NewGame(w, h, maxIter int) *Game {
 		width:       w,
 		height:      h,
 		zoom:        1,
-		colourScale: makeColourScale(maxIter),
+		colourScale: colourscale.MakeColourScale(maxIter),
 	}
 }
 

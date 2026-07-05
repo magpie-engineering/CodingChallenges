@@ -1,4 +1,4 @@
-package main
+package colourscale
 
 import (
 	"github.com/lucasb-eyer/go-colorful"
@@ -29,7 +29,7 @@ func (gt GradientTable) GetInterpolatedColorFor(t float64) colorful.Color {
 	return gt[len(gt)-1].Col
 }
 
-func makeColourScale(scaleLen int) []colorful.Color {
+func MakeColourScale(scaleLen int) []colorful.Color {
 	// The "keypoints" of the gradient.
 	keypoints := GradientTable{
 		{colorful.Color{R: 0.0, G: 7.0 / 255.0, B: 100.0 / 255.0}, 0.0},
