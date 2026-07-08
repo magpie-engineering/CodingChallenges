@@ -46,31 +46,52 @@ func handleClient(conn net.Conn) {
 	}
 }
 
+func sendResp(conn net.Conn, resp Resp) error {
+	response := resp.Build()
+	n, err := conn.Write(response)
+	if err != nil {
+		return err
+	}
+	if n != len(response) {
+		return fmt.Errorf("didn't write enough data: %d", n)
+	}
+	return nil
+}
+
 func handleRespCmd(conn net.Conn, cmd Resp) error {
 	switch v := cmd.(type) {
-	case RespSimpleString:
-		return handleSimpleCmd(conn, v)
+	case RespArray:
+		return handleArrayCmd(conn, v)
 	default:
 		return fmt.Errorf("invalid type")
 	}
 }
 
-func handleSimpleCmd(conn net.Conn, cmd RespSimpleString) error {
-	switch cmd {
-	case "PING":
-		response := RespSimpleString("PONG").Build()
-		n, err := conn.Write(response)
-		if err != nil {
-			return err
+func handleArrayCmd(conn net.Conn, cmd RespArray) error {
+	switch v := cmd[0].(type) {
+	case RespBulkString:
+		switch v {
+		case "info":
+			return sendResp(conn, RespBulkString(`# Server
+			redis_version:0.0.0.0
+			redis_mode:standalone
+			`))
+		case "ping":
+			return sendResp(conn, RespSimpleString("pong"))
+		case "echo":
+			return handleEcho(conn, cmd[1:])
+		default:
+			return fmt.Errorf("unknown array command:%s", v)
 		}
-		if n != len(response) {
-			return fmt.Errorf("didn't write enough data: %d", n)
-		}
-		return nil
-
 	default:
-		return fmt.Errorf("unknown command:%s", cmd)
-
+		return fmt.Errorf("unknown first elem %T", cmd[0])
 	}
 
+}
+
+func handleEcho(conn net.Conn, args RespArray) error {
+	if len(args) != 1 {
+		return fmt.Errorf("incorrect number of args to echo:%d", len(args))
+	}
+	return sendResp(conn, args[0])
 }
