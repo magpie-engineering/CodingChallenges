@@ -53,8 +53,6 @@ func (s RespArray) Build() []byte {
 		buf.Write(elem.Build())
 	}
 
-	buf.WriteString("\r\n")
-
 	return buf.Bytes()
 
 }
@@ -71,6 +69,25 @@ func (s RespBool) Build() []byte {
 		bool_char = 'f'
 	}
 	return []byte(fmt.Sprintf("#%c\r\n", bool_char))
+}
+
+func (s RespMap) Build() []byte {
+	var buf bytes.Buffer
+	len_string := strconv.Itoa(len(s))
+
+	buf.Grow(s.SerialLen())
+
+	buf.WriteByte('%')
+	buf.Write([]byte(len_string))
+	buf.WriteString("\r\n")
+
+	for key, value := range s {
+		buf.Write(key.Build())
+		buf.Write(value.Build())
+	}
+
+	return buf.Bytes()
+
 }
 
 func wrapResp(prefixChar byte, original []byte) []byte {
@@ -111,7 +128,7 @@ func (s RespArray) SerialLen() int {
 	for _, elem := range s {
 		elems_len += elem.SerialLen()
 	}
-	return 1 + len(len_string) + elems_len
+	return 1 + len(len_string) + 2 + elems_len
 }
 
 func (s RespNull) SerialLen() int {
@@ -120,4 +137,16 @@ func (s RespNull) SerialLen() int {
 
 func (s RespBool) SerialLen() int {
 	return 3
+}
+
+func (s RespMap) SerialLen() int {
+
+	len_string := strconv.Itoa(len(s))
+
+	var elems_len int
+	for key, value := range s {
+		elems_len += key.SerialLen()
+		elems_len += value.SerialLen()
+	}
+	return 1 + len(len_string) + 2 + elems_len
 }

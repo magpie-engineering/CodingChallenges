@@ -76,6 +76,8 @@ func (parser *RespParser) GetRespPrimitive() (Resp, error) {
 		return parser.parseNull()
 	case '#':
 		return parser.parseBool()
+	case '%':
+		return parser.parseMap()
 	default:
 		return nil, fmt.Errorf("Unknown command type:%c", respType[0])
 	}
@@ -213,5 +215,31 @@ func (parser *RespParser) parseBool() (RespBool, error) {
 	}
 
 	return RespBool(val), nil
+
+}
+
+func (parser *RespParser) parseMap() (RespMap, error) {
+	n, err := parser.parseInteger()
+	if err != nil {
+		return nil, err
+	}
+	if n < 0 {
+		return nil, nil
+	}
+	out_map := make(map[Resp]Resp)
+
+	for range n {
+		key, err := parser.GetRespPrimitive()
+		if err != nil {
+			return nil, err
+		}
+		value, err := parser.GetRespPrimitive()
+		if err != nil {
+			return nil, err
+		}
+		out_map[key] = value
+
+	}
+	return out_map, nil
 
 }
